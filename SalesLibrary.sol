@@ -2,6 +2,12 @@
 pragma solidity ^0.8.19;
 
 library SalesLibrary {
+    struct Sale {
+        uint256 productId;
+        address buyer;
+        uint256 timestamp;
+    }
+
     // Funzione per ottenere i prodotti acquistati da un determinato cliente
     function getPurchasedProducts(Sale[] memory sales, address customer) public pure returns (uint256[] memory) {
         uint256[] memory purchasedProducts = new uint256[](sales.length);
@@ -27,7 +33,7 @@ library SalesLibrary {
         uint256 total = 0;
         for (uint256 i = 0; i < sales.length; i++) {
             if (sales[i].timestamp >= startTime && sales[i].timestamp <= endTime) {
-                total += products[sales[i].productId].priceInWei;
+                total += products[sales[i].productId].price;
             }
         }
         return total;

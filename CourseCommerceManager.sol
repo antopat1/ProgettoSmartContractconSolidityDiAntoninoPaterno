@@ -17,12 +17,6 @@ contract CourseCommerceManager {
         uint256 price; // Prezzo in Wei
     }
 
-    struct Sale {
-        Product product;
-        address buyer;
-        uint256 timestamp;
-    }
-
     Product[] public products;
     SalesLibrary.Sale[] public sales;
 
@@ -57,7 +51,7 @@ contract CourseCommerceManager {
         require(msg.value == productToBuy.price, "L'importo inviato non corrisponde al prezzo del prodotto.");
 
         // Registra la vendita
-        sales.push(SalesLibrary.Sale(productToBuy, msg.sender, block.timestamp));
+        sales.push(SalesLibrary.Sale(_productId, msg.sender, block.timestamp));
         totalSalesCount++;
 
         emit SaleMade(_productId, msg.sender, block.timestamp);
@@ -70,7 +64,7 @@ contract CourseCommerceManager {
     }
 
     // Funzione per ottenere le informazioni su una vendita specifica
-    function getSale(uint256 _saleId) public view returns (Sale memory) {
+    function getSale(uint256 _saleId) public view returns (SalesLibrary.Sale memory) {
         require(_saleId < sales.length, "La vendita non esiste.");
         return sales[_saleId];
     }
@@ -78,13 +72,13 @@ contract CourseCommerceManager {
     // *** Integrazione delle funzioni della libreria SalesLibrary ***
     
     // Restituisce i prodotti acquistati da un cliente
-    function getCustomerPurchases(address _customer) public view returns (SalesLibrary.Sale[] memory) {
-        return sales.getPurchasesByCustomer(_customer); // Usa la funzione della libreria
+    function getCustomerPurchases(address _customer) public view returns (uint256[] memory) {
+        return sales.getPurchasedProducts(_customer); // Usa la funzione della libreria
     }
 
     // Calcola il totale delle vendite in Ether in un dato intervallo di tempo
     function getSalesInPeriod(uint256 _startTimestamp, uint256 _endTimestamp) public view returns (uint256) {
-        return sales.getTotalSalesInPeriod(_startTimestamp, _endTimestamp); // Usa la funzione della libreria
+        return sales.calculateTotalSales(_startTimestamp, _endTimestamp, products); // Usa la funzione della libreria
     }
 
     // Funzione per il proprietario per prelevare i fondi dal contratto
