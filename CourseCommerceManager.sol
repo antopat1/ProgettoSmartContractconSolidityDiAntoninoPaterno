@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-// Importa la libreria SalesLibrary
 import "./SalesLibrary.sol";
 
 contract CourseCommerceManager {
-    using SalesLibrary for SalesLibrary.Sale[]; // Utilizza la libreria per array di vendite
+    using SalesLibrary for SalesLibrary.Sale[]; // Utilizza la libreria per l'array di vendite
 
     address public owner;
     uint256 public totalSalesCount;
@@ -14,7 +13,7 @@ contract CourseCommerceManager {
     struct Product {
         uint256 id;
         string name;
-        uint256 price; // Prezzo in Wei
+        uint256 price; 
     }
 
     Product[] public products;
@@ -69,7 +68,7 @@ contract CourseCommerceManager {
         return sales[_saleId];
     }
 
-    // *** Integrazione delle funzioni della libreria SalesLibrary ***
+    // *** Utilizzo delle funzioni della libreria SalesLibrary ***
     
     // Restituisce i prodotti acquistati da un cliente
     function getCustomerPurchases(address _customer) public view returns (uint256[] memory) {
@@ -78,7 +77,12 @@ contract CourseCommerceManager {
 
     // Calcola il totale delle vendite in Ether in un dato intervallo di tempo
     function getSalesInPeriod(uint256 _startTimestamp, uint256 _endTimestamp) public view returns (uint256) {
-        return sales.calculateTotalSales(_startTimestamp, _endTimestamp, products); // Usa la funzione della libreria
+        // Creiamo un array dei prezzi dei prodotti per passarlo alla libreria
+        uint256[] memory productPrices = new uint256[](products.length);
+        for (uint256 i = 0; i < products.length; i++) {
+            productPrices[i] = products[i].price;
+        }
+        return sales.calculateTotalSales(_startTimestamp, _endTimestamp, productPrices); // Usa la funzione della libreria
     }
 
     // Funzione per il proprietario per prelevare i fondi dal contratto
