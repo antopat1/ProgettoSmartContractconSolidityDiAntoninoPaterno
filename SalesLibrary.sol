@@ -28,7 +28,7 @@ library SalesLibrary {
         return result;
     }
 
-    // Funzione per calcolare il totale delle vendite in Ether dato un periodo di tempo
+    // Funzione per calcolare il totale delle vendite in Wei dato un periodo di tempo
     function calculateTotalSales(Sale[] memory sales, uint256 startTime, uint256 endTime, uint256[] memory productPrices) public pure returns (uint256) {
         uint256 total = 0;
         for (uint256 i = 0; i < sales.length; i++) {
@@ -39,5 +39,3 @@ library SalesLibrary {
         return total;
     }
 }
-
-// https://remix.ethereum.org/#version=soljson-v0.8.26+commit.8a97fa7a.js&optimize=false&runs=200&gist=0ae598e74a19c268ed591e2cce5348fd&lang=en&evmVersion=null
