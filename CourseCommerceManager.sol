@@ -62,9 +62,9 @@ contract CourseCommerceManager {
         return totalProductsCount - 1;
     }
 
-    // Funzione per acquistare un prodotto
     function purchaseProduct(uint256 _productId) public payable {
         require(_productId < products.length, "Il prodotto non esiste.");
+        require(msg.sender != owner, "L'owner non puo' acquistare prodotti."); // Impedisce all'owner di acquistare
         Product memory productToBuy = products[_productId];
         require(
             msg.value == productToBuy.priceInWei,
