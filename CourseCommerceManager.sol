@@ -4,27 +4,27 @@ pragma solidity ^0.8.19;
 import "./SalesLibrary.sol";
 
 contract CourseCommerceManager {
-    using SalesLibrary for SalesLibrary.Sale[]; // Utilizza la libreria per l'array di vendite
+    using SalesLibrary for SalesLibrary.Enrollment[]; // Utilizza la libreria per l'array di iscrizioni
 
     address public owner;
-    uint256 public totalSalesCount;
-    uint256 public totalProductsCount;
+    uint256 public totalEnrollments; // Conteggio totale delle iscrizioni
+    uint256 public totalCourses; // Conteggio totale dei corsi
 
-    struct Product {
+    struct Course {
         uint256 id;
-        string name;
-        uint256 priceInWei; // Prezzo espresso in Wei
+        string title;
+        uint256 feeInWei; // Costo del corso in wei
     }
 
-    Product[] public products;
-    SalesLibrary.Sale[] public sales;
+    Course[] public courses; // Array di corsi offerti
+    SalesLibrary.Enrollment[] public enrollments; // Array di iscrizioni registrate
 
-    event ProductAdded(uint256 indexed id, string name, uint256 priceInWei);
-    event SaleMade(
-        uint256 indexed productId,
-        address indexed buyer,
+    event CourseAdded(uint256 indexed courseId, string title, uint256 feeInWei); // Evento per quando un corso viene aggiunto
+    event CourseEnrolled(
+        uint256 indexed courseId,
+        address indexed student,
         uint256 timestamp
-    );
+    ); // Evento per quando uno studente si iscrive a un corso
 
     constructor() {
         owner = msg.sender;
@@ -33,95 +33,94 @@ contract CourseCommerceManager {
     modifier onlyOwner() {
         require(
             msg.sender == owner,
-            "Solo il proprietario del contratto puo' eseguire questa funzione."
+            "Solo il proprietario puo' eseguire questa funzione."
         );
         _;
     }
 
-    // Funzione per aggiungere un nuovo prodotto
-    function addProduct(
-        string memory _name,
-        uint256 _priceInWei
-    ) public onlyOwner returns (uint256) {
+    // Funzione per aggiungere un nuovo corso
+    function addCourse(
+        string memory _title,
+        uint256 _feeInWei
+    ) public onlyOwner {
         require(
-            bytes(_name).length > 0,
-            "Il nome del prodotto deve essere specificato."
+            bytes(_title).length > 0,
+            "Il titolo del corso deve essere specificato."
         );
-        require(_priceInWei > 0, "Il prezzo deve essere maggiore di 0.");
-
-        // Aggiungi il prodotto
-        products.push(Product(totalProductsCount, _name, _priceInWei));
-
-        // Incrementa il contatore dei prodotti
-        totalProductsCount++;
-
-        // Emetti l'evento
-        emit ProductAdded(totalProductsCount - 1, _name, _priceInWei);
-
-        // Restituisci l'ID del prodotto appena creato
-        return totalProductsCount - 1;
-    }
-
-    function purchaseProduct(uint256 _productId) public payable {
-        require(_productId < products.length, "Il prodotto non esiste.");
-        require(msg.sender != owner, "L'owner non puo' acquistare prodotti."); // Impedisce all'owner di acquistare
-        Product memory productToBuy = products[_productId];
         require(
-            msg.value == productToBuy.priceInWei,
-            "L'importo inviato non corrisponde al prezzo del prodotto."
+            _feeInWei > 0,
+            "La quota d'iscrizione deve essere maggiore di 0."
         );
 
-        // Registra la vendita
-        sales.push(SalesLibrary.Sale(_productId, msg.sender, block.timestamp));
-        totalSalesCount++;
+        courses.push(Course(totalCourses, _title, _feeInWei));
+        totalCourses++;
 
-        emit SaleMade(_productId, msg.sender, block.timestamp);
+        emit CourseAdded(totalCourses, _title, _feeInWei);
     }
 
-    // Funzione per ottenere le informazioni su un prodotto specifico
-    function getProduct(
-        uint256 _productId
-    ) public view returns (Product memory) {
-        require(_productId < products.length, "Il prodotto non esiste.");
-        return products[_productId];
+    // Funzione per iscriversi a un corso
+    function enrollInCourse(uint256 _courseId) public payable {
+        require(_courseId < courses.length, "Il corso non esiste.");
+        require(msg.sender != owner, "L'owner non puo' autoacquistare corsi."); // Impedisce all'owner di acquistare corsi
+        Course memory selectedCourse = courses[_courseId];
+        require(
+            msg.value == selectedCourse.feeInWei,
+            "L'importo inviato non corrisponde alla quota d'iscrizione del corso."
+        );
+
+        // Registra l'iscrizione
+        enrollments.push(
+            SalesLibrary.Enrollment(_courseId, msg.sender, block.timestamp)
+        );
+        totalEnrollments++;
+
+        emit CourseEnrolled(_courseId, msg.sender, block.timestamp);
     }
 
-    // Funzione per ottenere le informazioni su una vendita specifica
-    function getSale(
-        uint256 _saleId
-    ) public view returns (SalesLibrary.Sale memory) {
-        require(_saleId < sales.length, "La vendita non esiste.");
-        return sales[_saleId];
+    // Funzione per ottenere le informazioni su un corso specifico
+    function getCourseDetails(
+        uint256 _courseId
+    ) public view returns (Course memory) {
+        require(_courseId < courses.length, "Il corso non esiste.");
+        return courses[_courseId];
+    }
+
+    // Funzione per ottenere le informazioni su una specifica iscrizione
+    function getEnrollmentDetails(
+        uint256 _enrollmentId
+    ) public view returns (SalesLibrary.Enrollment memory) {
+        require(_enrollmentId < enrollments.length, "L'iscrizione non esiste.");
+        return enrollments[_enrollmentId];
     }
 
     // *** Utilizzo delle funzioni della libreria SalesLibrary ***
 
-    // Restituisce i prodotti acquistati da un cliente
-    function getCustomerPurchases(
-        address _customer
+    // Restituisce i corsi a cui uno studente si è iscritto
+    function getStudentCourses(
+        address _student
     ) public view returns (uint256[] memory) {
-        return sales.getPurchasedProducts(_customer); // Usa la funzione della libreria
+        return enrollments.getCoursesByStudent(_student); // Usa la funzione della libreria
     }
 
-    // Calcola il totale delle vendite in Wei in un dato intervallo di tempo
-    function getSalesInPeriod(
+    // Calcola il totale delle iscrizioni in un dato intervallo di tempo
+    function getTotalEnrollmentsInPeriod(
         uint256 _startTimestamp,
         uint256 _endTimestamp
     ) public view returns (uint256) {
-        // Creiamo un array dei prezzi dei prodotti per passarlo alla libreria
-        uint256[] memory productPrices = new uint256[](products.length);
-        for (uint256 i = 0; i < products.length; i++) {
-            productPrices[i] = products[i].priceInWei;
+        // Creiamo un array delle quote d'iscrizione per i corsi
+        uint256[] memory courseFees = new uint256[](courses.length);
+        for (uint256 i = 0; i < courses.length; i++) {
+            courseFees[i] = courses[i].feeInWei;
         }
         return
-            sales.calculateTotalSales(
+            enrollments.calculateTotalEnrollments(
                 _startTimestamp,
                 _endTimestamp,
-                productPrices
+                courseFees
             ); // Usa la funzione della libreria
     }
 
-    // Funzione per il proprietario per prelevare i fondi dal contratto
+    // Funzione per il proprietario per prelevare i fondi accumulati
     function withdrawFunds() public onlyOwner {
         require(address(this).balance > 0, "Non ci sono fondi da prelevare.");
         (bool success, ) = owner.call{value: address(this).balance}("");

@@ -2,38 +2,49 @@
 pragma solidity ^0.8.19;
 
 library SalesLibrary {
-    struct Sale {
-        uint256 productId; 
-        address buyer;
+    struct Enrollment {
+        uint256 courseId;
+        address student;
         uint256 timestamp;
     }
 
-    // Funzione per ottenere i prodotti acquistati da un determinato cliente
-    function getPurchasedProducts(Sale[] memory sales, address customer) public pure returns (uint256[] memory) {
-        uint256[] memory purchasedProducts = new uint256[](sales.length);
+    // Funzione per ottenere i corsi a cui uno studente si è iscritto
+    function getCoursesByStudent(
+        Enrollment[] memory enrollments,
+        address student
+    ) public pure returns (uint256[] memory) {
+        uint256[] memory enrolledCourses = new uint256[](enrollments.length);
         uint256 count = 0;
-        for (uint256 i = 0; i < sales.length; i++) {
-            if (sales[i].buyer == customer) {
-                purchasedProducts[count] = sales[i].productId;
+        for (uint256 i = 0; i < enrollments.length; i++) {
+            if (enrollments[i].student == student) {
+                enrolledCourses[count] = enrollments[i].courseId;
                 count++;
             }
         }
 
-        // Ridimensionare l'array per restituire solo gli acquisti effettivi
+        // Ridimensionare l'array per restituire solo i corsi effettivamente iscritti
         uint256[] memory result = new uint256[](count);
         for (uint256 j = 0; j < count; j++) {
-            result[j] = purchasedProducts[j];
+            result[j] = enrolledCourses[j];
         }
 
         return result;
     }
 
-    // Funzione per calcolare il totale delle vendite in Wei dato un periodo di tempo
-    function calculateTotalSales(Sale[] memory sales, uint256 startTime, uint256 endTime, uint256[] memory productPrices) public pure returns (uint256) {
+    // Funzione per calcolare il totale delle iscrizioni dato un periodo di tempo
+    function calculateTotalEnrollments(
+        Enrollment[] memory enrollments,
+        uint256 startTime,
+        uint256 endTime,
+        uint256[] memory courseFees
+    ) public pure returns (uint256) {
         uint256 total = 0;
-        for (uint256 i = 0; i < sales.length; i++) {
-            if (sales[i].timestamp >= startTime && sales[i].timestamp <= endTime) {
-                total += productPrices[sales[i].productId];
+        for (uint256 i = 0; i < enrollments.length; i++) {
+            if (
+                enrollments[i].timestamp >= startTime &&
+                enrollments[i].timestamp <= endTime
+            ) {
+                total += courseFees[enrollments[i].courseId];
             }
         }
         return total;
