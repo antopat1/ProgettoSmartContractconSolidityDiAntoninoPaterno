@@ -18,6 +18,9 @@ contract CourseCommerceManager {
 
     Course[] public courses; // Array di corsi offerti
     SalesLibrary.Enrollment[] public enrollments; // Array di iscrizioni registrate
+    
+    // Mapping che tiene traccia degli studenti iscritti a ciascun corso
+    mapping(uint256 => mapping(address => bool)) public courseEnrollments;
 
     event CourseAdded(uint256 indexed courseId, string title, uint256 feeInWei); // Evento per quando un corso viene aggiunto
     event CourseEnrolled(
@@ -61,17 +64,16 @@ contract CourseCommerceManager {
     // Funzione per iscriversi a un corso
     function enrollInCourse(uint256 _courseId) public payable {
         require(_courseId < courses.length, "Il corso non esiste.");
-        require(msg.sender != owner, "L'owner non puo' autoacquistare corsi."); // Impedisce all'owner di acquistare corsi
+        require(msg.sender != owner, "L'owner non puo' autoacquistare dei corsi"); // Impedisce all'owner di acquistare corsi da lui stesso pubblicati
         Course memory selectedCourse = courses[_courseId];
-        require(
-            msg.value == selectedCourse.feeInWei,
-            "L'importo inviato non corrisponde alla quota d'iscrizione del corso."
-        );
+        require(msg.value == selectedCourse.feeInWei, "L'importo inviato non corrisponde alla quota d'iscrizione del corso.");
+
+        // Controlla se lo studente è già iscritto al corso
+        require(!courseEnrollments[_courseId][msg.sender], "Sei gia' iscritto a questo corso.");
 
         // Registra l'iscrizione
-        enrollments.push(
-            SalesLibrary.Enrollment(_courseId, msg.sender, block.timestamp)
-        );
+        enrollments.push(SalesLibrary.Enrollment(_courseId, msg.sender, block.timestamp));
+        courseEnrollments[_courseId][msg.sender] = true; // Aggiorna il mapping delle iscrizioni
         totalEnrollments++;
 
         emit CourseEnrolled(_courseId, msg.sender, block.timestamp);
