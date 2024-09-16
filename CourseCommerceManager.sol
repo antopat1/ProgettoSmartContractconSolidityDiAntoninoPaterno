@@ -16,11 +16,10 @@ contract CourseCommerceManager {
         uint256 feeInWei; // Costo del corso in wei
     }
 
-    Course[] public courses; // Array di corsi offerti
-    SalesLibrary.Enrollment[] public enrollments; // Array di iscrizioni registrate
-    
-    // Mapping che tiene traccia degli studenti iscritti a ciascun corso
-    mapping(uint256 => mapping(address => bool)) public courseEnrollments;
+    Course[] private courses; // Array di corsi offerti
+    SalesLibrary.Enrollment[] private enrollments; // Array di iscrizioni registrate
+    mapping(uint256 => mapping(address => bool)) private courseEnrollments; // Mapping che tiene traccia degli studenti iscritti a ciascun corso
+
 
     event CourseAdded(uint256 indexed courseId, string title, uint256 feeInWei); // Evento per quando un corso viene aggiunto
     event CourseEnrolled(
@@ -102,6 +101,21 @@ contract CourseCommerceManager {
         address _student
     ) public view returns (uint256[] memory) {
         return enrollments.getCoursesByStudent(_student); // Usa la funzione della libreria
+    }
+
+    // Restituisce sia ID che nome dei corsi a cui uno studente si è iscritto
+    function getStudentCoursesWithDetails(
+        address _student
+    ) public view returns (Course[] memory) {
+        uint256[] memory studentCourseIds = enrollments.getCoursesByStudent(_student); // Ottieni gli ID dei corsi
+        Course[] memory courseDetails = new Course[](studentCourseIds.length); // Array per ID e titoli
+
+        for (uint256 i = 0; i < studentCourseIds.length; i++) {
+            uint256 courseId = studentCourseIds[i];
+            courseDetails[i] = courses[courseId]; // Aggiungi il corso direttamente
+        }
+
+        return courseDetails; // Ritorna l'array di corsi con ID, titoli e feeInWei
     }
 
     // Calcola totale dei fondi raccolti dalle iscrizioni ai corsi in un certo periodo di tempo

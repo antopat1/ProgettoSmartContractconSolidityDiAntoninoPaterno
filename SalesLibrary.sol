@@ -13,22 +13,25 @@ library SalesLibrary {
         Enrollment[] memory enrollments,
         address student
     ) public pure returns (uint256[] memory) {
-        uint256[] memory enrolledCourses = new uint256[](enrollments.length);
+        // Conta prima quante iscrizioni ci sono per quello studente
         uint256 count = 0;
         for (uint256 i = 0; i < enrollments.length; i++) {
             if (enrollments[i].student == student) {
-                enrolledCourses[count] = enrollments[i].courseId;
                 count++;
             }
         }
 
-        // Ridimensionare l'array per restituire solo i corsi effettivamente iscritti
-        uint256[] memory result = new uint256[](count);
-        for (uint256 j = 0; j < count; j++) {
-            result[j] = enrolledCourses[j];
+        // Inizializza un array della lunghezza esatta
+        uint256[] memory enrolledCourses = new uint256[](count);
+        uint256 index = 0;
+        for (uint256 i = 0; i < enrollments.length; i++) {
+            if (enrollments[i].student == student) {
+                enrolledCourses[index] = enrollments[i].courseId;
+                index++;
+            }
         }
 
-        return result;
+        return enrolledCourses;
     }
 
     // Funzione per calcolare il totale dei fondi raccolti dalle iscrizioni ai corsi in un certo periodo di tempo
