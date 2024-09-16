@@ -104,7 +104,7 @@ contract CourseCommerceManager {
         return enrollments.getCoursesByStudent(_student); // Usa la funzione della libreria
     }
 
-    // Calcola il totale delle iscrizioni in un dato intervallo di tempo
+    // Calcola totale dei fondi raccolti dalle iscrizioni ai corsi in un certo periodo di tempo
     function getTotalEnrollmentsInPeriod(
         uint256 _startTimestamp,
         uint256 _endTimestamp
