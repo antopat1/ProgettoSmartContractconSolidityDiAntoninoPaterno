@@ -31,7 +31,7 @@ library SalesLibrary {
         return result;
     }
 
-    // Funzione per calcolare il totale delle iscrizioni dato un periodo di tempo
+    // Funzione per calcolare il totale dei fondi raccolit dalle iscrizioni ai corsi in un certo periodo di tempo
     function calculateTotalEnrollments(
         Enrollment[] memory enrollments,
         uint256 startTime,
